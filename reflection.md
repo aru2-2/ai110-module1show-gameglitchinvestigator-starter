@@ -12,11 +12,11 @@ Answer each question in 3 to 5 sentences. Be specific and honest about what actu
 
 Document at least 3 bugs you found. Add rows as needed.
 
-| Input | Expected Behavior | Actual Behavior | Console Output / Error |
-|-------|-------------------|-----------------|------------------------|
-| | | | |
-| | | | |
-| | | | |
+| Input | Expected Behavior | Actual Behavior | Console Output / Error | Suspected Code Location |
+|-------|-------------------|-----------------|------------------------|----------------------|
+| Guess of 1 | Hint should be "Go HIGHER!" | Hint was "Go LOWER!"| none | app.py,check_guess |
+| Switched to hard difficulty level | Range should increase | Range decreased | none | app.py, get_range_for_difficulty |
+| clicked new game button | Resets game stats and allows user to enter more guesses | Does not reset score and history, does not allow the player to enter guesses, banner still displays win | none | app.py, lines 134-145 |
 
 ---
 
