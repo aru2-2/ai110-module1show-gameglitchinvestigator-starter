@@ -2,7 +2,7 @@ import random
 import streamlit as st
 
 #FIX: Refactored logic into logic_utils.py using agent mode
-from logic_utils import check_guess, parse_guess
+from logic_utils import check_guess, parse_guess, get_temperature
 
 def get_range_for_difficulty(difficulty: str):
     if difficulty == "Easy":
@@ -23,8 +23,6 @@ def update_score(current_score: int, outcome: str, attempt_number: int):
         return current_score + points
 
     if outcome == "Too High":
-        if attempt_number % 2 == 0:
-            return current_score + 5
         return current_score - 5
 
     if outcome == "Too Low":
@@ -72,6 +70,10 @@ if "status" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
+# Structured per-guess records used only for the session summary table
+if "log" not in st.session_state:
+    st.session_state.log = []
+
 st.subheader("Make a guess")
 
 st.info(
@@ -79,12 +81,31 @@ st.info(
     f"Attempts left: {attempt_limit - st.session_state.attempts}"
 )
 
-with st.expander("Developer Debug Info"):
-    st.write("Secret:", st.session_state.secret)
-    st.write("Attempts:", st.session_state.attempts)
-    st.write("Score:", st.session_state.score)
-    st.write("Difficulty:", difficulty)
-    st.write("History:", st.session_state.history)
+# Fix: reserve the spot now but fill it after state updates, so it isn't stale
+debug_slot = st.container()
+
+
+def render_debug_info():
+    with debug_slot:
+        with st.expander("Developer Debug Info"):
+            st.write("Secret:", st.session_state.secret)
+            st.write("Attempts:", st.session_state.attempts)
+            st.write("Score:", st.session_state.score)
+            st.write("Difficulty:", difficulty)
+            st.write("History:", st.session_state.history)
+
+def render_summary():
+    """Show a table of every guess made this game, plus headline stats."""
+    log = st.session_state.log
+    if not log:
+        return
+    st.subheader("📊 Session summary")
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Guesses", len(log))
+    m2.metric("Score", st.session_state.score)
+    m3.metric("Status", st.session_state.status.capitalize())
+    st.table(log)
+
 
 raw_guess = st.text_input(
     "Enter your guess:",
@@ -106,6 +127,7 @@ if new_game:
     st.session_state.score = 0
     st.session_state.status = "playing"
     st.session_state.history = []
+    st.session_state.log = []
     st.session_state.pop(f"guess_input_{difficulty}", None)
     st.rerun()
 
@@ -114,6 +136,8 @@ if st.session_state.status != "playing":
         st.success("You already won. Start a new game to play again.")
     else:
         st.error("Game over. Start a new game to try again.")
+    render_summary()
+    render_debug_info()
     st.stop()
 
 if submit:
@@ -124,20 +148,41 @@ if submit:
     if not ok:
         st.session_state.history.append(raw_guess)
         st.error(err)
+        st.session_state.log.append({
+            "Attempt": len(st.session_state.log) + 1,
+            "Guess": raw_guess.strip() or "(blank)",
+            "Result": "Invalid",
+            "Temperature": "—",
+            "Score change": 0,
+        })
     else:
         st.session_state.history.append(guess_int)
 
         # Ensures that the check_guess function gets the secret variable as a int
         outcome, message = check_guess(guess_int, st.session_state.secret)
 
-        if show_hint:
-            st.warning(message)
+        label, emoji, color = get_temperature(
+            guess_int, st.session_state.secret, low, high
+        )
 
+        if show_hint:
+            # Direction hint colored by temperature, e.g. ":red[🔥 Hot — 📉 Go LOWER!]"
+            st.markdown(f":{color}[**{emoji} {label}** — {message}]")
+
+        previous_score = st.session_state.score
         st.session_state.score = update_score(
             current_score=st.session_state.score,
             outcome=outcome,
             attempt_number=st.session_state.attempts,
         )
+
+        st.session_state.log.append({
+            "Attempt": len(st.session_state.log) + 1,
+            "Guess": guess_int,
+            "Result": outcome,
+            "Temperature": f"{emoji} {label}",
+            "Score change": st.session_state.score - previous_score,
+        })
 
         if outcome == "Win":
             st.balloons()
@@ -154,6 +199,9 @@ if submit:
                     f"The secret was {st.session_state.secret}. "
                     f"Score: {st.session_state.score}"
                 )
+
+render_summary()
+render_debug_info()
 
 st.divider()
 st.caption("Built by an AI that claims this code is production-ready.")

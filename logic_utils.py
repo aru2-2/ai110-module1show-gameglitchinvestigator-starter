@@ -43,6 +43,28 @@ def check_guess(guess, secret):
     return "Too Low", "📈 Go HIGHER!"
 
 
+def get_temperature(guess, secret, low, high):
+    """
+    Return (label, emoji, color) describing how close a guess is to the secret.
+
+    Closeness is measured as a fraction of the full range, so it scales
+    with difficulty. Colors are Streamlit markdown color names.
+    """
+    if guess == secret:
+        return "Correct", "🎯", "green"
+
+    span = max(high - low, 1)
+    ratio = abs(guess - secret) / span
+
+    if ratio <= 0.05:
+        return "Hot", "🔥", "red"
+    if ratio <= 0.15:
+        return "Warm", "🌡️", "orange"
+    if ratio <= 0.30:
+        return "Cool", "🧊", "blue"
+    return "Cold", "🥶", "violet"
+
+
 def update_score(current_score: int, outcome: str, attempt_number: int):
     """Update score based on outcome and attempt number."""
     raise NotImplementedError("Refactor this function from app.py into logic_utils.py")
