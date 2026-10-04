@@ -46,12 +46,15 @@ Yes, AI designed tests in the test_game_logic.py folder to test the accuracy of 
 ## 4. What did you learn about Streamlit and state?
 
 - How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit?
-
+Streamlit "reruns" the entire Python file every time something is clicked, which wipes normal variables. Session state is a small memory box that survives those "reruns", so you put anything the app must remember there, like the secret number or the number of attempts.
 ---
 
 ## 5. Looking ahead: your developer habits
 
 - What is one habit or strategy from this project that you want to reuse in future labs or projects?
   - This could be a testing habit, a prompting strategy, or a way you used Git.
+I want to reuse frequent Git commits in future labs and projects. I feel like I was able to make multiple meaningful commits about what I changed in the code, which helped me figure out where to go next based on the versions I had created. Having this project broken up into various parts also helped me understand the incremental changes I was making so I could write about them in my commit messages.
 - What is one thing you would do differently next time you work with AI on a coding task?
+Next time, I would spend more time crafting more detailed prompts rather than going for speed in finding a solution. I think that the extra time spent explaining the context to the AI agent will be more useful in generating clean, effective code, rather than lengthy, complicated code that may not be the most efficient.
 - In one or two sentences, describe how this project changed the way you think about AI generated code.
+This project helped me realize that AI generated code is more powerful at finding bug fixes and refactoring than I previously thought. However, I also noticed that AI still makes some errors that require human oversight, such as producing code that runs but is not easy to read.
