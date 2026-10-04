@@ -93,7 +93,3 @@ Sample table:
 | 1 | 10 | Too Low | 🥶 Cold | -5 |
 | 2 | 55 | Too Low | 🌡️ Warm | -5 |
 | 3 | 62 | Win | 🎯 Correct | 50 |
-
-<!-- Screenshot (optional): add one of the colored hint and the session summary here -->
-
-**Note:** if you add a function to `logic_utils.py` while Streamlit is running, restart the server (Ctrl+C, then `python -m streamlit run app.py`). A stale server can raise `ImportError: cannot import name ...`.
